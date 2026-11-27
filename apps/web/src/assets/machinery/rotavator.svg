@@ -1,0 +1,40 @@
+<svg viewBox="0 0 120 80" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full object-contain">
+  <!-- Agricultural Rotavator (Red Heavy Body, Gearbox, Black Rotor Tines) -->
+  <g id="rotavator-body">
+    <!-- Top Mounting A-Frame Hitch -->
+    <path d="M50 14L40 38H60L50 14Z" fill="#DC2626" stroke="#991B1B" stroke-width="1.5" />
+    <circle cx="50" cy="18" r="2.5" fill="#1F2937" stroke="#F3F4F6" stroke-width="0.8" />
+    <path d="M50 20V38" stroke="#991B1B" stroke-width="2" />
+
+    <!-- Central Gearbox Housing -->
+    <rect x="42" y="32" width="16" height="15" rx="2" fill="#1F2937" stroke="#111827" stroke-width="1.2" />
+    <!-- Gearbox top cap & PTO input shaft -->
+    <rect x="45" y="27" width="10" height="6" rx="1" fill="#4B5563" />
+    <circle cx="50" cy="39" r="4" fill="#991B1B" />
+    <circle cx="50" cy="39" r="2" fill="#E5E7EB" />
+
+    <!-- Main Curved Red Canopy / Hood -->
+    <path d="M12 40C12 36 24 35 60 35C96 35 108 36 108 40L105 56H15L12 40Z" fill="#DC2626" stroke="#991B1B" stroke-width="1.5" />
+    <path d="M14 42C24 38 60 38 106 42" stroke="#EF4444" stroke-width="1.5" />
+
+    <!-- Side Skid Plates (Depth Controllers) -->
+    <path d="M14 46L10 65C10 67 12 68 15 68H26L22 46H14Z" fill="#1F2937" stroke="#111827" stroke-width="1.2" />
+    <path d="M98 46L94 68H105C108 68 110 67 110 65L106 46H98Z" fill="#1F2937" stroke="#111827" stroke-width="1.2" />
+
+    <!-- Rear Trailing Board / Leveling Flap -->
+    <path d="M15 56H105L108 64H12L15 56Z" fill="#B91C1C" stroke="#7F1D1D" stroke-width="1" />
+    <!-- Spring Tensioners -->
+    <line x1="30" y1="38" x2="26" y2="58" stroke="#1F2937" stroke-width="1.5" />
+    <line x1="90" y1="38" x2="94" y2="58" stroke="#1F2937" stroke-width="1.5" />
+
+    <!-- Rotor Tines / L-Blades underneath -->
+    <g stroke="#1F2937" stroke-width="2.5" stroke-linecap="round">
+      <path d="M30 58L26 68L20 70" />
+      <path d="M42 58L40 70L46 72" />
+      <path d="M54 58L52 69L48 71" />
+      <path d="M66 58L68 70L74 72" />
+      <path d="M78 58L76 69L70 71" />
+      <path d="M90 58L92 70L98 72" />
+    </g>
+  </g>
+</svg>

@@ -1,0 +1,7 @@
+# P01 authentication decisions
+
+- P01 adds the four owner session operations and a recovery intake response. The API specification requires verification before registration. An operator verifies email ownership by delivering an expiring registration code to that address. A unique normalized email index prevents code reuse after registration. Automated delivery and identity recovery require a mail provider and are deferred.
+- The MVP uses email credentials and one owner per business. User and business creation is atomic and requires a MongoDB replica set. Existing P00 starts without a database, with auth returning 503 in that configuration. Tests inject a memory repository.
+- Sessions use opaque random tokens. MongoDB stores the SHA-256 digest with an expiry and revocation deletes the record. Production cookies require HTTPS. SameSite and a required custom request header protect auth mutations against cross-origin form submissions.
+- Auth rate limits are process-local. Before horizontal scaling, move them to a shared limiter and configure verified proxy client IP handling. Recovery intake always responds generically. A future implementation should deliver a hashed, expiring, single-use token by verified email and revoke all active sessions after a password reset.
+- P00 DTOs remain compatible. P01 adds input schemas and guarded auth routes. The profile is read-only. Browser mock mode uses a labeled demo session and is restricted to Vite development.

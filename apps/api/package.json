@@ -1,0 +1,30 @@
+{
+  "name": "@kisan/api",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch --env-file-if-exists=.env src/server.ts",
+    "build": "esbuild src/server.ts src/reconcile.ts --bundle --platform=node --packages=external --alias:@kisan/contracts=../../packages/contracts/src/index.ts --format=esm --outdir=dist",
+    "start": "node --env-file-if-exists=.env dist/server.js",
+    "auth:code": "tsx --env-file-if-exists=.env src/issue-registration-code.ts",
+    "seed": "tsx --env-file-if-exists=.env src/seed.ts",
+    "reconcile": "node --env-file-if-exists=.env dist/reconcile.js",
+    "drill:backup-restore": "tsx src/drills/backup-restore.drill.ts"
+  },
+  "dependencies": {
+    "@kisan/contracts": "*",
+    "@kisan/domain": "*",
+    "express": "^5.1.0",
+    "mongoose": "^8.19.0",
+    "pdfkit": "^0.21.0",
+    "zod": "^4.1.0"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/pdfkit": "^0.17.7",
+    "esbuild": "^0.25.0",
+    "mongodb-memory-server": "^11.4.0",
+    "pdfjs-dist": "^6.5.438",
+    "tsx": "^4.20.0"
+  }
+}

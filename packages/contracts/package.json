@@ -1,0 +1,14 @@
+{
+  "name": "@kisan/contracts",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./farmer-memory": "./src/farmer-memory.ts",
+    "./catalog-memory": "./src/catalog-memory.ts"
+  },
+  "dependencies": {
+    "zod": "^4.1.0"
+  }
+}

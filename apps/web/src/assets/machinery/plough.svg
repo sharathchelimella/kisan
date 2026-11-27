@@ -1,0 +1,44 @@
+<svg viewBox="0 0 120 80" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full object-contain">
+  <!-- Agricultural Reversible Plough (Blue Heavy Steel Frame, Silver Curved Shares) -->
+  <g id="plough-body">
+    <!-- Front 3-Point Hitch Mast & Turnover Cylinder -->
+    <path d="M18 16L12 45H24L20 16H18Z" fill="#1D4ED8" stroke="#1E40AF" stroke-width="1.5" />
+    <circle cx="19" cy="20" r="2.5" fill="#1F2937" stroke="#F3F4F6" stroke-width="0.8" />
+    <!-- Turnover Hydraulic Cylinder (Silver / Black) -->
+    <rect x="22" y="28" width="18" height="6" rx="2" fill="#4B5563" stroke="#1F2937" stroke-width="1" />
+    <rect x="20" y="30" width="8" height="2" fill="#E5E7EB" />
+
+    <!-- Main Diagonal Steel Beam (Blue) -->
+    <path d="M16 42L95 24L97 29L18 47L16 42Z" fill="#2563EB" stroke="#1D4ED8" stroke-width="1.2" />
+
+    <!-- Plough Leg 1 (Front Bottom & Top Mouldboards) -->
+    <path d="M36 40L38 60L45 56L42 38H36Z" fill="#1D4ED8" />
+    <!-- Bottom Mouldboard (Silver curved share) -->
+    <path d="M38 60C38 60 48 64 56 60C58 55 52 50 45 52L38 60Z" fill="#94A3B8" stroke="#475569" stroke-width="1.2" />
+    <path d="M38 60L46 64L48 61" stroke="#334155" stroke-width="1.5" stroke-linecap="round" />
+    <!-- Top Mouldboard (Reversible Upper Share) -->
+    <path d="M36 34C36 34 46 30 54 34C56 39 50 44 43 42L36 34Z" fill="#64748B" stroke="#334155" stroke-width="1.2" />
+
+    <!-- Plough Leg 2 (Middle Mouldboards) -->
+    <path d="M62 34L64 54L71 50L68 32H62Z" fill="#1D4ED8" />
+    <!-- Bottom Mouldboard 2 -->
+    <path d="M64 54C64 54 74 58 82 54C84 49 78 44 71 46L64 54Z" fill="#94A3B8" stroke="#475569" stroke-width="1.2" />
+    <path d="M64 54L72 58L74 55" stroke="#334155" stroke-width="1.5" stroke-linecap="round" />
+    <!-- Top Mouldboard 2 -->
+    <path d="M62 28C62 28 72 24 80 28C82 33 76 38 69 36L62 28Z" fill="#64748B" stroke="#334155" stroke-width="1.2" />
+
+    <!-- Plough Leg 3 (Rear Mouldboards) -->
+    <path d="M88 28L90 48L97 44L94 26H88Z" fill="#1D4ED8" />
+    <!-- Bottom Mouldboard 3 -->
+    <path d="M90 48C90 48 100 52 108 48C110 43 104 38 97 40L90 48Z" fill="#CBD5E1" stroke="#475569" stroke-width="1.2" />
+    <path d="M90 48L98 52L100 49" stroke="#334155" stroke-width="1.5" stroke-linecap="round" />
+    <!-- Top Mouldboard 3 -->
+    <path d="M88 22C88 22 98 18 106 22C108 27 102 32 95 30L88 22Z" fill="#64748B" stroke="#334155" stroke-width="1.2" />
+
+    <!-- Depth Control Wheel (Rear side wheel) -->
+    <path d="M78 42L76 56" stroke="#1E40AF" stroke-width="2.5" />
+    <circle cx="76" cy="58" r="8" fill="#1F2937" stroke="#111827" stroke-width="1.5" />
+    <circle cx="76" cy="58" r="4" fill="#3B82F6" />
+    <circle cx="76" cy="58" r="1.5" fill="#E5E7EB" />
+  </g>
+</svg>

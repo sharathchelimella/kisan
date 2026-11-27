@@ -1,0 +1,59 @@
+<svg viewBox="0 0 120 80" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full object-contain">
+  <!-- Modern Agricultural Tractor (Green body, yellow rims, black tyres) -->
+  <g id="tractor-body">
+    <!-- Engine Compartment & Hood -->
+    <path d="M42 32H16C13.5 32 12 34 12 36.5V48H45L42 32Z" fill="#15803D" stroke="#0F5132" stroke-width="1.5" />
+    <path d="M12 37H42V39H12V37Z" fill="#16A34A" />
+    <path d="M12 40H30V43H12V40Z" fill="#166534" opacity="0.6" />
+    
+    <!-- Front Grille & Headlight -->
+    <path d="M12 36.5C12 34 13.5 32 16 32V48H12V36.5Z" fill="#1F2937" />
+    <rect x="13" y="34" width="2" height="12" fill="#374151" rx="0.5" />
+    <circle cx="14" cy="36" r="2" fill="#FEF08A" stroke="#CA8A04" stroke-width="0.5" />
+    
+    <!-- Exhaust Pipe -->
+    <rect x="22" y="16" width="3" height="17" fill="#1F2937" rx="1" />
+    <path d="M22 17C22 15 25 15 25 17" stroke="#1F2937" stroke-width="1" />
+    <circle cx="34" cy="28" r="3" fill="#1F2937" />
+
+    <!-- Driver Cab (Glass & Dark Pillars) -->
+    <path d="M41 32L46 14C46.5 12 48.5 11 51 11H74C76.5 11 78.5 12.5 78.5 15L75 36H41V32Z" fill="#E0F2FE" fill-opacity="0.85" stroke="#1F2937" stroke-width="1.8" />
+    <!-- Cab Roof -->
+    <path d="M44 14C44 11.5 47 10 50 10H76C79 10 81 11.5 81 14V16H44V14Z" fill="#15803D" stroke="#0F5132" stroke-width="1.2" />
+    <!-- Cab Interior / Seat / Steering Wheel -->
+    <rect x="52" y="24" width="8" height="10" fill="#374151" rx="1" />
+    <path d="M49 26L52 23" stroke="#111827" stroke-width="2" stroke-linecap="round" />
+    <circle cx="49" cy="22" r="3" stroke="#111827" stroke-width="1.5" />
+
+    <!-- Rear Mudguard Fender -->
+    <path d="M50 36C50 28 58 24 68 24C78 24 86 28 86 36V48H50V36Z" fill="#16A34A" stroke="#0F5132" stroke-width="1.5" />
+  </g>
+
+  <!-- Front Tyre (Smaller) -->
+  <g id="front-wheel">
+    <circle cx="28" cy="54" r="14" fill="#1F2937" stroke="#111827" stroke-width="2" />
+    <!-- Tyre Treads -->
+    <path d="M28 40V42M28 66V68M14 54H16M40 54H42M18 44L20 45M36 63L38 64M18 64L20 63M36 45L38 44" stroke="#374151" stroke-width="2.5" stroke-linecap="round" />
+    <!-- Yellow Rim -->
+    <circle cx="28" cy="54" r="8" fill="#FACC15" stroke="#EAB308" stroke-width="1.5" />
+    <!-- Hub -->
+    <circle cx="28" cy="54" r="3" fill="#1F2937" />
+    <circle cx="28" cy="54" r="1" fill="#9CA3AF" />
+  </g>
+
+  <!-- Rear Tyre (Large Heavy-Duty with Deep Treads) -->
+  <g id="rear-wheel">
+    <circle cx="70" cy="50" r="22" fill="#1F2937" stroke="#111827" stroke-width="2.5" />
+    <!-- Deep Agricultural Treads -->
+    <path d="M70 28L72 32M70 72L68 68M48 50L52 48M92 50L88 52M55 35L58 38M85 65L82 62M55 65L58 62M85 35L82 38" stroke="#374151" stroke-width="3.5" stroke-linecap="round" />
+    <!-- Large Yellow Rim -->
+    <circle cx="70" cy="50" r="14" fill="#FACC15" stroke="#EAB308" stroke-width="2" />
+    <!-- Rim Hub & Wheel Nuts -->
+    <circle cx="70" cy="50" r="6" fill="#CA8A04" />
+    <circle cx="70" cy="50" r="4" fill="#1F2937" />
+    <circle cx="70" cy="46" r="0.8" fill="#F3F4F6" />
+    <circle cx="74" cy="50" r="0.8" fill="#F3F4F6" />
+    <circle cx="70" cy="54" r="0.8" fill="#F3F4F6" />
+    <circle cx="66" cy="50" r="0.8" fill="#F3F4F6" />
+  </g>
+</svg>
