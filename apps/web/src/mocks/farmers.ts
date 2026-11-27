@@ -1,10 +1,10 @@
 import { createMemoryFarmerRepository } from "@kisan/contracts/farmer-memory";
-import { demoFarmers } from "./fixtures";
+import { all124DemoFarmers } from "./farmer-dataset";
 import type { FarmersClient } from "../services/farmers";
 
 const businessId = "DEMO-business-1";
 const repository = createMemoryFarmerRepository(
-  demoFarmers.map((farmer) => ({ businessId, farmer })),
+  all124DemoFarmers.map((farmer) => ({ businessId, farmer })),
 );
 async function found<T>(value: Promise<T | null>) {
   const result = await value;
@@ -13,6 +13,7 @@ async function found<T>(value: Promise<T | null>) {
 }
 export const demoFarmersClient: FarmersClient = {
   list: (query) => repository.list(businessId, query),
+  summary: () => repository.summary(businessId),
   get: async (id) => {
     try {
       const res = await repository.get(businessId, id);
@@ -20,19 +21,15 @@ export const demoFarmersClient: FarmersClient = {
     } catch {
       // ignore
     }
-    const foundDemo = demoFarmers.find((f) => f.id === id);
+    const foundDemo = all124DemoFarmers.find((f) => f.id === id);
     if (foundDemo) return foundDemo;
-    return {
-      ...demoFarmers[0],
-      id,
-      name: id === "FARM-108" || id === "ACT-104" ? "Rajesh Patel" : demoFarmers[0].name,
-      village: "Jannaram",
-    };
+    return all124DemoFarmers[0];
   },
   save: (input, id) =>
     id
       ? found(repository.update(businessId, id, input))
       : repository.create(businessId, input),
   archive: (id) => found(repository.archive(businessId, id)),
+  delete: (id) => repository.delete(businessId, id),
   matches: (input) => repository.matches(businessId, input),
 };

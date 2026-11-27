@@ -12,12 +12,14 @@ function send(res: Response, data: unknown, status = 200) {
 export function createFarmerController(
   service: FarmerService,
 ): Record<
-  "list" | "get" | "create" | "update" | "archive" | "matches",
+  "list" | "summary" | "get" | "create" | "update" | "archive" | "delete" | "matches",
   RequestHandler
 > {
   return {
     list: async (req, res) =>
       send(res, await service.list(res.locals.businessId, req.query)),
+    summary: async (req, res) =>
+      send(res, await service.summary(res.locals.businessId)),
     get: async (req, res) =>
       send(
         res,
@@ -38,6 +40,11 @@ export function createFarmerController(
       send(
         res,
         await service.archive(res.locals.businessId, String(req.params.id)),
+      ),
+    delete: async (req, res) =>
+      send(
+        res,
+        await service.delete(res.locals.businessId, String(req.params.id)),
       ),
     matches: async (req, res) =>
       send(res, await service.matches(res.locals.businessId, req.body)),

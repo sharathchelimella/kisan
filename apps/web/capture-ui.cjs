@@ -50,6 +50,32 @@ async function main() {
   await desktopPage.screenshot({ path: machineryPath, fullPage: false });
   console.log("Saved machinery detail screenshot to:", machineryPath);
 
+  // Take Farmers Management Screenshot at 1600x900 matching Image 1
+  console.log("Navigating to Farmers Management (/farmers)...");
+  await desktopPage.goto("http://localhost:5173/farmers", { waitUntil: "networkidle" });
+  await desktopPage.waitForTimeout(1000);
+  const farmersPath = path.join(outputDir, "05-farmers-management-1600x900.png");
+  await desktopPage.screenshot({ path: farmersPath, fullPage: false });
+  console.log("Saved farmers management screenshot to:", farmersPath);
+
+  // Click on the first row's action menu to show the 6-item dropdown
+  const actionBtn = await desktopPage.$("tbody tr:first-child button[aria-label*='Actions']");
+  if (actionBtn) {
+    await actionBtn.click();
+    await desktopPage.waitForTimeout(500);
+    const actionMenuPath = path.join(outputDir, "06-farmers-action-menu-1600x900.png");
+    await desktopPage.screenshot({ path: actionMenuPath, fullPage: false });
+    console.log("Saved farmers action menu screenshot to:", actionMenuPath);
+  }
+
+  // Take Farmer Details Page Screenshot
+  console.log("Navigating to Farmer Details (/farmers/FARM-001)...");
+  await desktopPage.goto("http://localhost:5173/farmers/FARM-001", { waitUntil: "networkidle" });
+  await desktopPage.waitForTimeout(1000);
+  const farmerDetailPath = path.join(outputDir, "07-farmer-details-1600x900.png");
+  await desktopPage.screenshot({ path: farmerDetailPath, fullPage: false });
+  console.log("Saved farmer details screenshot to:", farmerDetailPath);
+
   // 2. Mobile 390 x 844 (iPhone 14 / modern smartphone)
   const mobileContext = await browser.newContext({
     viewport: { width: 390, height: 844 },
@@ -58,12 +84,12 @@ async function main() {
   });
 
   const mobilePage = await mobileContext.newPage();
-  console.log("Navigating to Dashboard on Mobile (390px)...");
-  await mobilePage.goto("http://localhost:5173/dashboard", { waitUntil: "networkidle" });
+  console.log("Navigating to Farmers on Mobile (390px)...");
+  await mobilePage.goto("http://localhost:5173/farmers", { waitUntil: "networkidle" });
   await mobilePage.waitForTimeout(1000);
-  const mobileDashboardPath = path.join(outputDir, "04-dashboard-mobile-390px.png");
-  await mobilePage.screenshot({ path: mobileDashboardPath, fullPage: true });
-  console.log("Saved mobile dashboard screenshot to:", mobileDashboardPath);
+  const mobileFarmersPath = path.join(outputDir, "08-farmers-mobile-390px.png");
+  await mobilePage.screenshot({ path: mobileFarmersPath, fullPage: true });
+  console.log("Saved mobile farmers screenshot to:", mobileFarmersPath);
 
   await browser.close();
   console.log("All screenshots captured successfully!");

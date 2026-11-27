@@ -4,19 +4,23 @@ import {
   AUTH_REQUEST_HEADER,
   farmerSchema,
   farmerPageSchema,
+  farmerSummarySchema,
   type Farmer,
   type FarmerInput,
   type FarmerMatches,
   type FarmerPage,
   type FarmerQuery,
+  type FarmerSummary,
 } from "@kisan/contracts";
 import { demoFarmersClient } from "../mocks/farmers";
 
 export interface FarmersClient {
   list(query: FarmerQuery): Promise<FarmerPage>;
+  summary?(): Promise<FarmerSummary>;
   get(id: string): Promise<Farmer>;
   save(input: FarmerInput, id?: string): Promise<Farmer>;
   archive(id: string): Promise<Farmer>;
+  delete?(id: string): Promise<{ success: boolean }>;
   matches(input: FarmerMatches): Promise<Farmer[]>;
 }
 async function request(path: string, method = "GET", body?: object) {
@@ -56,6 +60,13 @@ const httpFarmers: FarmersClient = {
     return farmerSchema.parse(
       await request("/" + encodeURIComponent(id) + "/archive", "POST"),
     );
+  },
+  async delete(id) {
+    await request("/" + encodeURIComponent(id), "DELETE");
+    return { success: true };
+  },
+  async summary() {
+    return farmerSummarySchema.parse(await request("/summary"));
   },
   async matches(input) {
     return z

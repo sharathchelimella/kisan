@@ -31,12 +31,21 @@ export const farmerMatchesSchema = z
     excludeId: z.string().optional(),
   })
   .strict();
+export const farmerSummarySchema = z.object({
+  totalFarmers: z.number().int().nonnegative(),
+  totalWorkCount: z.number().int().nonnegative(),
+  totalAmountPaise: z.number().int().nonnegative(),
+  pendingAmountPaise: z.number().int().nonnegative(),
+  villages: z.array(z.string()).default([]),
+});
 export const farmerPageSchema = z.object({
   items: z.array(farmerSchema),
   total: z.number().int().nonnegative(),
   page: z.number().int().positive(),
   pageSize: z.number().int().positive(),
+  summary: farmerSummarySchema.optional(),
 });
+export type FarmerSummary = z.infer<typeof farmerSummarySchema>;
 export type FarmerQuery = z.infer<typeof farmerDirectoryQuerySchema>;
 export type FarmerPatch = z.infer<typeof farmerPatchSchema>;
 export type FarmerMatches = z.infer<typeof farmerMatchesSchema>;

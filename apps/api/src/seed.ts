@@ -155,15 +155,42 @@ export async function seedDemoData() {
     })),
   );
 
-  // 5. Create 100 Farmers
-  console.log("Seeding 100 registered farmers with realistic Telangana village profiles...");
+  // 5. Create 124 Farmers matching Reference Requirements
+  console.log("Seeding 124 registered farmers with realistic Telangana village profiles...");
+  const top10Specs = [
+    { name: "Ramesh Reddy", village: "Lingampalli", mobile: "9876543210" },
+    { name: "Srinivas Rao", village: "Kothapalli", mobile: "9849011223" },
+    { name: "Karthik Naidu", village: "Venkatapalli", mobile: "9701233445" },
+    { name: "Mahesh Yadav", village: "Chintalapalli", mobile: "9012344556" },
+    { name: "Bala Krishna", village: "Rangampet", mobile: "9398766554" },
+    { name: "Venkatesh", village: "Peddapalli", mobile: "9901277889" },
+    { name: "Prasad Goud", village: "Mallampet", mobile: "9988755660" },
+    { name: "Anil Kumar", village: "Lingampalli", mobile: "9703322110" },
+    { name: "Dileep Reddy", village: "Kothapalli", mobile: "9347688990" },
+    { name: "Nagaraju", village: "Chintalapalli", mobile: "9652133440" },
+  ];
+
   const farmerDocs = [];
-  for (let i = 0; i < 100; i++) {
+  for (let i = 0; i < top10Specs.length; i++) {
+    const s = top10Specs[i];
+    farmerDocs.push({
+      businessId,
+      name: s.name,
+      normalizedName: s.name.trim().toLowerCase(),
+      village: s.village,
+      normalizedVillage: s.village.trim().toLowerCase(),
+      mobile: s.mobile,
+      normalizedMobile: s.mobile,
+      notes: `DEMO_DATA farmer #${i + 1}`,
+    });
+  }
+
+  for (let i = 0; i < 114; i++) {
     const fn = TELUGU_FIRST_NAMES[i % TELUGU_FIRST_NAMES.length];
-    const ln = TELUGU_LAST_NAMES[(i * 3) % TELUGU_LAST_NAMES.length];
+    const ln = TELUGU_LAST_NAMES[(i * 3 + 2) % TELUGU_LAST_NAMES.length];
     const fullName = `${fn} ${ln}`;
-    const village = VILLAGES[i % VILLAGES.length];
-    const mobile = generatePhone(i + 1);
+    const village = VILLAGES[(i * 2 + 1) % VILLAGES.length];
+    const mobile = generatePhone(i + 11);
 
     farmerDocs.push({
       businessId,
@@ -173,12 +200,12 @@ export async function seedDemoData() {
       normalizedVillage: village.trim().toLowerCase(),
       mobile,
       normalizedMobile: mobile,
-      notes: `DEMO_DATA farmer #${i + 1}`,
+      notes: `DEMO_DATA farmer #${i + 11}`,
     });
   }
 
   const createdFarmers = await FarmerModel.insertMany(farmerDocs);
-  console.log(`Created ${createdFarmers.length} farmers.`);
+  console.log(`Created ${createdFarmers.length} farmers (124 total).`);
 
   // 6. Generate 6 Months of Work Records, Invoices, and Payments
   // Month 6 (Current Demo Reporting Month target):

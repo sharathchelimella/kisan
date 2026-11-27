@@ -26,6 +26,7 @@ export function createFarmerRouter(
   }
   router.use(requireSession(auth));
   const controller = createFarmerController(createFarmerService(repository));
+  router.get("/summary", controller.summary);
   router.get("/", controller.list);
   router.get("/:id", controller.get);
   router.use(requireAuthRequest, json({ limit: "16kb" }));
@@ -33,5 +34,6 @@ export function createFarmerRouter(
   router.post("/", controller.create);
   router.patch("/:id", controller.update);
   router.post("/:id/archive", controller.archive);
+  router.delete("/:id", controller.delete);
   return router;
 }

@@ -216,14 +216,16 @@ export const mongoDashboard: DashboardReadRepository = {
       { month: "Jan", revenuePaise: workValuePaise || 48500000, collectedPaise: collectionsPaise || 37200000 },
     ];
 
+    const hasRealData = jobs.length > 0 || invoices.length > 0 || receipts.length > 0;
+
     return {
-      workValuePaise: workValuePaise || 48500000,
-      collectionsPaise: collectionsPaise || 37200000,
-      outstandingPaise: outstandingPaise || 11300000,
+      workValuePaise: hasRealData ? workValuePaise : 48500000,
+      collectionsPaise: hasRealData ? collectionsPaise : 37200000,
+      outstandingPaise: hasRealData ? outstandingPaise : 11300000,
       farmerCount,
-      completedJobCount: jobs.length || 124,
-      todayWorkPaise: sum(todayJobs.map((job) => job.totalPaise)) || 1450000,
-      todayCollectionsPaise: sum(todayReceipts.map((receipt) => receipt.amountPaise)) || 1200000,
+      completedJobCount: hasRealData ? jobs.length : 124,
+      todayWorkPaise: sum(todayJobs.map((job) => job.totalPaise)),
+      todayCollectionsPaise: sum(todayReceipts.map((receipt) => receipt.amountPaise)),
       recentActivity: activity,
 
       // Rich analytics
@@ -242,8 +244,8 @@ export const mongoDashboard: DashboardReadRepository = {
         { name: "Cultivator", utilizationPct: 54, icon: "grid" },
       ],
       paymentBreakdown: {
-        collectedPaise: collectionsPaise || 37200000,
-        pendingPaise: outstandingPaise || 11300000,
+        collectedPaise: hasRealData ? collectionsPaise : 37200000,
+        pendingPaise: hasRealData ? outstandingPaise : 11300000,
         collectedPct,
         avgPaymentDays: 6,
       },

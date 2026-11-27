@@ -14,6 +14,11 @@ export const farmerSchema = farmerInputSchema.extend({
   archivedAt: timestampSchema.optional(),
   createdAt: timestampSchema,
   updatedAt: timestampSchema,
+  totalWorks: z.number().int().nonnegative().optional(),
+  totalAmountPaise: z.number().int().nonnegative().optional(),
+  paidAmountPaise: z.number().int().nonnegative().optional(),
+  pendingAmountPaise: z.number().int().nonnegative().optional(),
+  status: z.enum(["ACTIVE", "ARCHIVED"]).optional(),
 });
 export type FarmerInput = z.infer<typeof farmerInputSchema>;
 export type Farmer = z.infer<typeof farmerSchema>;

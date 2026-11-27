@@ -9,11 +9,15 @@ import {
   type FarmerQuery,
   type FarmerMatches,
   type FarmerPage,
+  type FarmerSummary,
 } from "@kisan/contracts";
 import { FarmerModel } from "../models/Farmer.model";
+import { JobModel } from "../models/Job.model";
+import { InvoiceModel } from "../models/Invoice.model";
 
 export interface FarmerRepository {
   list(businessId: string, query: FarmerQuery): Promise<FarmerPage>;
+  summary(businessId: string): Promise<FarmerSummary>;
   get(businessId: string, id: string): Promise<Farmer | null>;
   create(businessId: string, input: FarmerInput): Promise<Farmer>;
   update(
@@ -22,6 +26,7 @@ export interface FarmerRepository {
     input: FarmerPatch,
   ): Promise<Farmer | null>;
   archive(businessId: string, id: string): Promise<Farmer | null>;
+  delete?(businessId: string, id: string): Promise<{ success: boolean }>;
   matches(businessId: string, input: FarmerMatches): Promise<Farmer[]>;
 }
 
@@ -93,12 +98,108 @@ export const mongoFarmers: FarmerRepository = {
         .lean(),
       FarmerModel.countDocuments(filter),
     ]);
+
+    const farmerIds = records.map((r) => r._id);
+    const [jobs, invoices] = await Promise.all([
+      JobModel.find({
+        businessId,
+        farmerId: { $in: farmerIds },
+        state: { $ne: "CANCELLED" },
+      })
+        .select("farmerId")
+        .lean(),
+      InvoiceModel.find({
+        businessId,
+        farmerId: { $in: farmerIds },
+        lifecycle: "ISSUED",
+      })
+        .select("farmerId totalPaise paidPaise duePaise")
+        .lean(),
+    ]);
+
+    const jobCountMap = new Map<string, number>();
+    for (const j of jobs) {
+      const fid = j.farmerId.toString();
+      jobCountMap.set(fid, (jobCountMap.get(fid) ?? 0) + 1);
+    }
+
+    const finMap = new Map<string, { total: number; paid: number; due: number }>();
+    for (const inv of invoices) {
+      const fid = inv.farmerId.toString();
+      const prev = finMap.get(fid) ?? { total: 0, paid: 0, due: 0 };
+      finMap.set(fid, {
+        total: prev.total + (inv.totalPaise || 0),
+        paid: prev.paid + (inv.paidPaise || 0),
+        due: prev.due + (inv.duePaise || 0),
+      });
+    }
+
+    const items = records.map((rec) => {
+      const d = dto(rec);
+      const fid = rec._id.toString();
+      const fin = finMap.get(fid);
+      d.totalWorks = jobCountMap.get(fid) ?? 0;
+      d.totalAmountPaise = fin?.total ?? 0;
+      d.paidAmountPaise = fin?.paid ?? 0;
+      d.pendingAmountPaise = fin?.due ?? 0;
+      d.status = rec.archivedAt ? "ARCHIVED" : "ACTIVE";
+      return d;
+    });
+
     return {
-      items: records.map(dto),
+      items,
       total,
       page: query.page,
       pageSize: query.pageSize,
     };
+  },
+  async summary(businessId) {
+    const [totalFarmers, jobsCount, invoices, villages] = await Promise.all([
+      FarmerModel.countDocuments({
+        businessId,
+        archivedAt: { $exists: false },
+      }),
+      JobModel.countDocuments({ businessId, state: { $ne: "CANCELLED" } }),
+      InvoiceModel.aggregate([
+        { $match: { businessId, lifecycle: "ISSUED" } },
+        {
+          $group: {
+            _id: null,
+            totalAmountPaise: { $sum: "$totalPaise" },
+            pendingAmountPaise: { $sum: "$duePaise" },
+          },
+        },
+      ]),
+      FarmerModel.distinct("village", {
+        businessId,
+        archivedAt: { $exists: false },
+      }),
+    ]);
+
+    const agg = invoices[0] || { totalAmountPaise: 0, pendingAmountPaise: 0 };
+    return {
+      totalFarmers,
+      totalWorkCount: jobsCount,
+      totalAmountPaise: agg.totalAmountPaise,
+      pendingAmountPaise: agg.pendingAmountPaise,
+      villages: (villages as string[]).filter(Boolean).sort(),
+    };
+  },
+  async delete(businessId, id) {
+    if (!isValidObjectId(id)) return { success: false };
+    const [hasJobs, hasInvoices] = await Promise.all([
+      JobModel.exists({ businessId, farmerId: id }),
+      InvoiceModel.exists({ businessId, farmerId: id }),
+    ]);
+    if (hasJobs || hasInvoices) {
+      await FarmerModel.updateOne(
+        { businessId, _id: id },
+        { $set: { archivedAt: new Date() } },
+      );
+      return { success: true };
+    }
+    await FarmerModel.deleteOne({ businessId, _id: id });
+    return { success: true };
   },
   async get(businessId, id) {
     if (!isValidObjectId(id)) return null;
