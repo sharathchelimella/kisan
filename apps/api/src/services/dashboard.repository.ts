@@ -142,12 +142,12 @@ export const mongoDashboard: DashboardReadRepository = {
     );
 
     const activeFarmerIds = new Set(jobs.map((j) => j.farmerId?.toString()).filter(Boolean));
-    const activeFarmerCount = activeFarmerIds.size || Math.min(farmerCount, 87);
+    const activeFarmerCount = activeFarmerIds.size;
 
     // Calculate collection percentages
-    const totalBilled = workValuePaise || 48500000;
-    const collectedPct = totalBilled > 0 ? Number(((collectionsPaise / totalBilled) * 100).toFixed(1)) : 76.7;
-    const pendingPct = Number((100 - collectedPct).toFixed(1));
+    const totalBilled = sum(invoices.map((invoice) => invoice.totalPaise));
+    const collectedPct = totalBilled > 0 ? Number(((collectionsPaise / totalBilled) * 100).toFixed(1)) : 0;
+    const pendingPct = totalBilled > 0 ? Number((100 - collectedPct).toFixed(1)) : 0;
 
     // Machinery revenue aggregation from jobs
     const machineryMap = new Map<string, number>();
@@ -164,25 +164,7 @@ export const mongoDashboard: DashboardReadRepository = {
       }
     }
 
-    const defaultMachinery = [
-      { name: "Tractor (Plough)", revenuePaise: 19200000, pct: 39.6, color: "#15803D" },
-      { name: "Rotavator", revenuePaise: 11600000, pct: 23.9, color: "#22C55E" },
-      { name: "Trailer (Mud)", revenuePaise: 8800000, pct: 18.1, color: "#F59E0B" },
-      { name: "Cultivator", revenuePaise: 5600000, pct: 11.5, color: "#2CB89A" },
-      { name: "Others", revenuePaise: 3300000, pct: 6.8, color: "#86EFAC" },
-    ];
-
-    const revenueByMachinery = defaultMachinery.map((item) => {
-      const realPaise = machineryMap.get(item.name);
-      if (realPaise !== undefined && workValuePaise > 0) {
-        return {
-          ...item,
-          revenuePaise: realPaise,
-          pct: Number(((realPaise / workValuePaise) * 100).toFixed(1)),
-        };
-      }
-      return item;
-    });
+    const revenueByMachinery = [...machineryMap].map(([name, revenuePaise]) => ({ name, revenuePaise, pct: workValuePaise ? Number((100 * revenuePaise / workValuePaise).toFixed(1)) : 0 }));
 
     // Works by Type breakdown
     const worksTypeMap = new Map<string, number>();
@@ -198,63 +180,43 @@ export const mongoDashboard: DashboardReadRepository = {
       }
     }
 
-    const worksByType = [
-      { name: "Plough", count: worksTypeMap.get("Plough") || 42, color: "#15803D" },
-      { name: "Rotavator", count: worksTypeMap.get("Rotavator") || 28, color: "#22C55E" },
-      { name: "Mud Trip", count: worksTypeMap.get("Mud Trip") || 24, color: "#4ADE80" },
-      { name: "Cultivator", count: worksTypeMap.get("Cultivator") || 18, color: "#86EFAC" },
-      { name: "Others", count: worksTypeMap.get("Others") || 12, color: "#BBF7D0" },
-    ];
+    const worksByType = [...worksTypeMap].map(([name, count]) => ({ name, count }));
 
     // Standard 6-month historical trend
-    const monthlyTrend = [
-      { month: "Aug", revenuePaise: 21000000, collectedPaise: 14500000 },
-      { month: "Sep", revenuePaise: 27500000, collectedPaise: 19500000 },
-      { month: "Oct", revenuePaise: 32500000, collectedPaise: 24500000 },
-      { month: "Nov", revenuePaise: 40500000, collectedPaise: 30000000 },
-      { month: "Dec", revenuePaise: 43500000, collectedPaise: 34000000 },
-      { month: "Jan", revenuePaise: workValuePaise || 48500000, collectedPaise: collectionsPaise || 37200000 },
-    ];
-
-    const hasRealData = jobs.length > 0 || invoices.length > 0 || receipts.length > 0;
+    const trend = new Map<string, { month: string; revenuePaise: number; collectedPaise: number }>();
+    for (const job of jobs) { const month = job.workDate.slice(0, 7); const row = trend.get(month) ?? { month, revenuePaise: 0, collectedPaise: 0 }; row.revenuePaise += job.totalPaise; trend.set(month, row); }
+    for (const receipt of receipts) { const month = receipt.paymentDate.slice(0, 7); const row = trend.get(month) ?? { month, revenuePaise: 0, collectedPaise: 0 }; row.collectedPaise += receipt.amountPaise; trend.set(month, row); }
+    const monthlyTrend = [...trend.values()].sort((a, b) => a.month.localeCompare(b.month));
 
     return {
-      workValuePaise: hasRealData ? workValuePaise : 48500000,
-      collectionsPaise: hasRealData ? collectionsPaise : 37200000,
-      outstandingPaise: hasRealData ? outstandingPaise : 11300000,
+      workValuePaise,
+      collectionsPaise,
+      outstandingPaise,
       farmerCount,
-      completedJobCount: hasRealData ? jobs.length : 124,
+      completedJobCount: jobs.length,
       todayWorkPaise: sum(todayJobs.map((job) => job.totalPaise)),
       todayCollectionsPaise: sum(todayReceipts.map((receipt) => receipt.amountPaise)),
       recentActivity: activity,
 
       // Rich analytics
-      revenueGrowthPct: 18.4,
       collectedPct,
       pendingPct,
-      worksGrowthPct: 12.7,
-      farmersGrowthPct: 6.1,
       activeFarmerCount,
       monthlyTrend,
       revenueByMachinery,
-      equipmentUtilization: [
-        { name: "Tractor", utilizationPct: 86, icon: "tractor" },
-        { name: "Rotavator", utilizationPct: 72, icon: "disc" },
-        { name: "Trailer", utilizationPct: 68, icon: "truck" },
-        { name: "Cultivator", utilizationPct: 54, icon: "grid" },
-      ],
+      equipmentUtilization: [],
       paymentBreakdown: {
-        collectedPaise: hasRealData ? collectionsPaise : 37200000,
-        pendingPaise: hasRealData ? outstandingPaise : 11300000,
+        collectedPaise: collectionsPaise,
+        pendingPaise: outstandingPaise,
         collectedPct,
-        avgPaymentDays: 6,
+        avgPaymentDays: 0,
       },
       worksByType,
       todayOverview: {
-        todayWorkPaise: sum(todayJobs.map((job) => job.totalPaise)) || 1450000,
-        todayCollectionsPaise: sum(todayReceipts.map((receipt) => receipt.amountPaise)) || 1200000,
-        scheduledJobs: 3,
-        pendingJobs: 5,
+        todayWorkPaise: sum(todayJobs.map((job) => job.totalPaise)),
+        todayCollectionsPaise: sum(todayReceipts.map((receipt) => receipt.amountPaise)),
+        scheduledJobs: 0,
+        pendingJobs: 0,
       },
     };
   },

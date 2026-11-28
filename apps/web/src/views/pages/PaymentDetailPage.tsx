@@ -14,12 +14,14 @@ import {
   ExternalLink,
   ChevronRight,
   ShieldCheck,
+  RotateCcw,
+  AlertTriangle,
 } from "lucide-react";
 import type { Receipt } from "@kisan/contracts";
 import { paymentClient } from "../../services/payments";
 import { formatInr } from "../components/KpiCard";
 import { Loading } from "../components/ui";
-import { demoFarmers } from "../../mocks/fixtures";
+import { all124DemoFarmers } from "../../mocks/farmer-dataset";
 
 export function PaymentDetailPage() {
   const { id = "" } = useParams();
@@ -27,6 +29,10 @@ export function PaymentDetailPage() {
   const [receipt, setReceipt] = useState<Receipt | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [reversalOpen, setReversalOpen] = useState(false);
+  const [reversalReason, setReversalReason] = useState("");
+  const [reversing, setReversing] = useState(false);
+  const [reversalError, setReversalError] = useState("");
 
   useEffect(() => {
     let active = true;
@@ -43,15 +49,15 @@ export function PaymentDetailPage() {
           // If not found by ID directly, check if demo fallback or simulate
           const fallback: Receipt = {
             id,
-            invoiceId: "DEMO-invoice-1",
-            farmerId: "DEMO-farmer-1",
-            amountPaise: 1500000,
-            method: "UPI",
-            reference: id.startsWith("ACT") ? "REC-4902" : id,
-            paymentDate: "2026-11-27",
+            invoiceId: "KB-0056",
+            farmerId: "FARM-RAMESH",
+            amountPaise: 450000,
+            method: "CASH",
+            reference: id.startsWith("REC") ? id : "REC-4901",
+            paymentDate: "18 Jan 2025",
             status: "POSTED",
-            createdAt: "2026-11-27T14:30:00.000Z",
-            note: "Payment settled via phone UPI transfer for agricultural work",
+            createdAt: "2025-01-18T10:30:00.000Z",
+            note: "Paid at farm, received by owner",
           };
           setReceipt(fallback);
         }
@@ -91,10 +97,28 @@ export function PaymentDetailPage() {
     }
   };
 
-  const farmer = demoFarmers.find((f) => f.id === receipt?.farmerId) || {
-    name: "Mallaiah Yadav",
-    village: "Jannaram",
-    mobile: "9876543210",
+  const handleReverse = async () => {
+    if (reversalReason.trim().length < 3) {
+      setReversalError("Reason must be at least 3 characters.");
+      return;
+    }
+    setReversing(true);
+    setReversalError("");
+    try {
+      await paymentClient.reverse(receipt!.id, reversalReason);
+      setReceipt({ ...receipt!, status: "REVERSED", reversalReason });
+      setReversalOpen(false);
+    } catch (err) {
+      setReversalError(err instanceof Error ? err.message : "Reversal failed.");
+    } finally {
+      setReversing(false);
+    }
+  };
+
+  const farmer = all124DemoFarmers.find((f) => f.id === receipt?.farmerId) || {
+    name: (receipt as any)?.farmerName || "Ramesh Reddy",
+    village: "Kothapalli",
+    mobile: "98765 43210",
   };
 
   return (
@@ -199,6 +223,17 @@ export function PaymentDetailPage() {
                   <CheckCircle size={13} />
                   {receipt.status === "POSTED" ? "Payment Confirmed" : "Reversed"}
                 </span>
+
+                {receipt.status === "POSTED" && (
+                  <button
+                    type="button"
+                    onClick={() => setReversalOpen(true)}
+                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-800 border border-amber-300 hover:bg-amber-100 transition-colors cursor-pointer"
+                  >
+                    <RotateCcw size={12} />
+                    <span>Reverse Payment</span>
+                  </button>
+                )}
               </div>
             </div>
 
@@ -313,6 +348,53 @@ export function PaymentDetailPage() {
                 Digital transaction secured & verified by Kisan Machinery Manager
               </span>
               <span className="font-mono text-[11px]">System ID: {receipt.id}</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Reversal Confirmation Modal */}
+      {reversalOpen && receipt && (
+        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-gray-200 space-y-4">
+            <div className="flex items-center gap-2.5 text-amber-700">
+              <AlertTriangle className="w-5 h-5 text-amber-600" />
+              <h3 className="font-bold text-base text-gray-900">Confirm Payment Reversal</h3>
+            </div>
+            <p className="text-xs sm:text-sm text-gray-600">
+              You are about to reverse the payment of <strong>{formatInr(receipt.amountPaise)}</strong> for {farmer.name}. This will restore the outstanding balance on invoice #{receipt.invoiceId}.
+            </p>
+            <div>
+              <label className="block text-xs font-semibold text-gray-700 mb-1">
+                Reason for Reversal *
+              </label>
+              <textarea
+                rows={3}
+                value={reversalReason}
+                onChange={(e) => setReversalReason(e.target.value)}
+                placeholder="e.g., Recorded incorrect payment mode / check returned"
+                className="w-full p-2.5 text-xs sm:text-sm border border-gray-300 rounded-xl focus:outline-none focus:border-green-600 resize-none"
+              />
+              {reversalError && (
+                <p className="text-xs text-red-600 mt-1">{reversalError}</p>
+              )}
+            </div>
+            <div className="flex items-center justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setReversalOpen(false)}
+                className="px-4 py-2 text-xs font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={reversing}
+                onClick={handleReverse}
+                className="px-4 py-2 text-xs font-bold text-white bg-red-600 hover:bg-red-700 rounded-xl transition-colors cursor-pointer disabled:opacity-50"
+              >
+                {reversing ? "Reversing..." : "Confirm Reversal"}
+              </button>
             </div>
           </div>
         </div>

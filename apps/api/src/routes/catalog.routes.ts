@@ -8,6 +8,9 @@ import type { AuthService } from "../services/auth.service";
 import type { CatalogRepository } from "../services/catalog.repository";
 import { CatalogReferenceError } from "../services/catalog.service";
 import { createCatalogController } from "../controllers/catalog.controller";
+import { calculateEquipmentAnalytics, jobSchema } from "@kisan/contracts";
+import { JobModel } from "../models/Job.model";
+import mongoose from "mongoose";
 
 export function createCatalogRouter(
   auth: AuthService | undefined,
@@ -25,9 +28,68 @@ export function createCatalogRouter(
   if (!auth) return router;
   const controller = createCatalogController(repository);
   const guard = requireSession(auth);
-  const parse = json({ limit: "16kb" });
+  const parse = json({ limit: "768kb" });
   router.get("/equipment", guard, controller.equipmentList);
+  router.get("/equipment/analytics", guard, async (req, res) => {
+    const from =
+      typeof req.query.from === "string" &&
+      /^\d{4}-\d{2}-\d{2}$/.test(req.query.from)
+        ? req.query.from
+        : undefined;
+    const to =
+      typeof req.query.to === "string" &&
+      /^\d{4}-\d{2}-\d{2}$/.test(req.query.to)
+        ? req.query.to
+        : undefined;
+    const businessId = res.locals.businessId;
+    const jobRecords =
+      mongoose.connection.readyState === 1
+        ? await JobModel.find({
+            businessId,
+            state: { $in: ["COMPLETED", "BILLED"] },
+            ...(from || to
+              ? {
+                  workDate: {
+                    ...(from && { $gte: from }),
+                    ...(to && { $lte: to }),
+                  },
+                }
+              : {}),
+          }).lean()
+        : [];
+    const equipment = [];
+    for (let page = 1; ; page += 1) {
+      const result = await repository.equipmentList(businessId, {
+        active: "all",
+        page,
+        pageSize: 100,
+      });
+      equipment.push(...result.items);
+      if (page * 100 >= result.total) break;
+    }
+    const jobs = jobRecords.map((record) =>
+      jobSchema.parse({
+        ...record,
+        id: record._id.toString(),
+        farmerId: record.farmerId.toString(),
+        invoiceId: record.invoiceId?.toString() ?? null,
+        lines: record.lines.map((line) => ({
+          ...line,
+          serviceId: line.serviceId.toString(),
+          equipmentIds: line.equipmentIds.map((id) => id.toString()),
+        })),
+        completedAt: record.completedAt?.toISOString(),
+        createdAt: record.createdAt.toISOString(),
+        updatedAt: record.updatedAt.toISOString(),
+      }),
+    );
+    res.json({
+      data: calculateEquipmentAnalytics(equipment, jobs, from, to),
+      meta: { requestId: res.locals.requestId },
+    });
+  });
   router.get("/services", guard, controller.serviceList);
+  router.get("/equipment/:id", guard, controller.equipmentGet);
   router.post(
     "/equipment",
     guard,

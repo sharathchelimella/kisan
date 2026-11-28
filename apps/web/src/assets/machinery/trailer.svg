@@ -1,0 +1,24 @@
+<svg viewBox="0 0 120 80" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full object-contain">
+  <!-- Agricultural Tipping Trailer / Trolley (Green/Yellow) -->
+  <g id="trailer-body">
+    <!-- Hitch Bar -->
+    <path d="M12 55H32" stroke="#374151" stroke-width="3" stroke-linecap="round" />
+    <circle cx="10" cy="55" r="3" fill="#1F2937" />
+    
+    <!-- Heavy Duty Metal Tipping Body (Green) -->
+    <path d="M30 26H110L106 54H32L30 26Z" fill="#16A34A" stroke="#15803D" stroke-width="1.8" />
+    <!-- Side Ribs / Stiffeners -->
+    <line x1="50" y1="26" x2="50" y2="54" stroke="#15803D" stroke-width="1.5" />
+    <line x1="70" y1="26" x2="70" y2="54" stroke="#15803D" stroke-width="1.5" />
+    <line x1="90" y1="26" x2="90" y2="54" stroke="#15803D" stroke-width="1.5" />
+    <line x1="31" y1="40" x2="108" y2="40" stroke="#15803D" stroke-width="1.5" />
+    
+    <!-- Chassis Frame -->
+    <rect x="30" y="54" width="75" height="5" fill="#1F2937" />
+    
+    <!-- Dual Heavy Duty Wheels & Tyres -->
+    <circle cx="75" cy="62" r="14" fill="#111827" stroke="#374151" stroke-width="2" />
+    <circle cx="75" cy="62" r="7" fill="#EAB308" />
+    <circle cx="75" cy="62" r="3" fill="#111827" />
+  </g>
+</svg>

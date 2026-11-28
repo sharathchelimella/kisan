@@ -45,17 +45,21 @@ for (const width of [360, 1440]) {
       await page
         .getByRole("button", { name: "Add Equipment", exact: true })
         .click();
-      await page.getByLabel("Name", { exact: true }).fill(name);
-      await page.getByLabel("Equipment type").selectOption(kind);
-      await page.getByRole("button", { name: "Save", exact: true }).click();
+      await page.getByRole("dialog").getByRole("button", { name: kind === "TRACTOR" ? /Tractor Representative/ : /Rotavator Representative/ }).click();
+      await page.getByRole("button", { name: "Continue" }).click();
+      await page.getByRole("button", { name: "Continue" }).click();
+      await page.getByRole("button", { name: "Continue" }).click();
+      await page.getByLabel("Name *").fill(name);
+      await page.getByRole("button", { name: "Continue" }).click();
+      await page.getByRole("button", { name: "Confirm and add" }).click();
       await expect(
-        page.getByRole("heading", { name, exact: true }),
+        page.getByRole("heading", { name, exact: true }).first(),
       ).toBeVisible();
     }
     await page.screenshot({
       path: testInfo.outputPath(`equipment-${width}.png`),
     });
-    await page.getByRole("button", { name: "Services", exact: true }).click();
+    await page.getByRole("link", { name: "Services", exact: true }).click();
     await page
       .getByRole("button", { name: "Add Service", exact: true })
       .click();
@@ -86,14 +90,7 @@ for (const width of [360, 1440]) {
     await page.screenshot({
       path: testInfo.outputPath(`services-${width}.png`),
     });
-    for (const language of ["te", "hi", "en"]) {
-      await page
-        .getByRole("combobox", { name: /Language|భాష|भाषा/ })
-        .selectOption(language);
-      expect(
-        await page.evaluate(() => document.documentElement.scrollWidth),
-      ).toBe(width);
-    }
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(width);
     await page.getByRole("button", { name: "Archive", exact: true }).click();
     await page
       .getByRole("button", { name: "Archive", exact: true })

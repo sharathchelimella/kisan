@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Languages } from "lucide-react";
 import { Sidebar, MobileNavigation } from "../components/Navigation";
@@ -32,7 +32,11 @@ export function LanguagePicker() {
 
 export function AppLayout() {
   const { t } = useTranslation();
+  const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const isPayments = location.pathname === "/payments";
+  const isInvoices = location.pathname === "/invoices";
+  const isCleanTop = isPayments || isInvoices;
 
   return (
     <div className="min-h-screen bg-[#F7F9F8] text-[#14251C] flex">
@@ -49,11 +53,17 @@ export function AppLayout() {
 
       {/* Main Workspace (Offset by sidebar width on desktop) */}
       <div className="flex-1 md:ml-[260px] flex flex-col min-w-0 pb-16 md:pb-6">
-        {/* Global Header */}
-        <Header onOpenMobileMenu={() => setMobileMenuOpen(true)} />
+        {/* Global Header: suppressed on /payments and /invoices to match reference image single top-bar */}
+        {!isCleanTop && <Header onOpenMobileMenu={() => setMobileMenuOpen(true)} />}
 
         {/* Page Content */}
-        <main id="main-content" tabIndex={-1} className="flex-1 px-4 md:px-7 py-3.5 focus:outline-none max-w-[1600px] w-full mx-auto">
+        <main
+          id="main-content"
+          tabIndex={-1}
+          className={`flex-1 px-4 md:px-7 ${
+            isCleanTop ? "pt-3.5 pb-20 md:pb-6" : "py-3.5 pb-20 md:pb-6"
+          } focus:outline-none max-w-[1600px] w-full mx-auto`}
+        >
           <Outlet />
         </main>
       </div>

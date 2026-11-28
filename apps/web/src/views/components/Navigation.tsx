@@ -56,7 +56,7 @@ export function Sidebar({
   const isBillingActive =
     location.pathname.startsWith("/invoices") ||
     location.pathname.startsWith("/payments") ||
-    location.pathname.startsWith("/jobs");
+    (location.pathname.startsWith("/jobs") && !location.pathname.startsWith("/jobs/new"));
 
   const [billingExpanded, setBillingExpanded] = useState(isBillingActive);
 
@@ -118,94 +118,7 @@ export function Sidebar({
           <span>Farmers</span>
         </NavLink>
 
-        {/* 3. Add Work */}
-        <NavLink
-          to="/jobs/new"
-          onClick={onClose}
-          className={({ isActive }) =>
-            `flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
-              isActive
-                ? "bg-[#2EA44F] text-white font-semibold shadow-sm"
-                : "text-white/85 hover:text-white hover:bg-white/10"
-            }`
-          }
-        >
-          <PlusSquare size={19} className="flex-shrink-0" />
-          <span>Add Work</span>
-        </NavLink>
-
-        {/* 4. Bills & Payments (with Expandable Submenu) */}
-        <div>
-          <button
-            type="button"
-            onClick={() => setBillingExpanded(!billingExpanded)}
-            className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
-              isBillingActive
-                ? "bg-white/15 text-white font-semibold"
-                : "text-white/85 hover:text-white hover:bg-white/10"
-            }`}
-          >
-            <div className="flex items-center gap-3">
-              <FileText size={19} className="flex-shrink-0" />
-              <span>Bills & Payments</span>
-            </div>
-            {billingExpanded ? (
-              <ChevronDown size={16} className="text-white/70" />
-            ) : (
-              <ChevronRight size={16} className="text-white/70" />
-            )}
-          </button>
-
-          {/* Submenu Drawer */}
-          {billingExpanded && (
-            <div className="pl-9 pr-2 py-1 space-y-1 text-xs">
-              <NavLink
-                to="/invoices"
-                onClick={onClose}
-                className={({ isActive }) =>
-                  `flex items-center gap-2 px-3 py-1.5 rounded-lg transition-colors ${
-                    isActive
-                      ? "bg-[#2EA44F] text-white font-semibold"
-                      : "text-white/80 hover:text-white hover:bg-white/10"
-                  }`
-                }
-              >
-                <Receipt size={14} />
-                <span>Bills & Invoices</span>
-              </NavLink>
-              <NavLink
-                to="/payments"
-                onClick={onClose}
-                className={({ isActive }) =>
-                  `flex items-center gap-2 px-3 py-1.5 rounded-lg transition-colors ${
-                    isActive
-                      ? "bg-[#2EA44F] text-white font-semibold"
-                      : "text-white/80 hover:text-white hover:bg-white/10"
-                  }`
-                }
-              >
-                <Wallet size={14} />
-                <span>Payments</span>
-              </NavLink>
-              <NavLink
-                to="/jobs"
-                onClick={onClose}
-                className={({ isActive }) =>
-                  `flex items-center gap-2 px-3 py-1.5 rounded-lg transition-colors ${
-                    isActive
-                      ? "bg-[#2EA44F] text-white font-semibold"
-                      : "text-white/80 hover:text-white hover:bg-white/10"
-                  }`
-                }
-              >
-                <Briefcase size={14} />
-                <span>Work Records</span>
-              </NavLink>
-            </div>
-          )}
-        </div>
-
-        {/* 5. Machinery */}
+        {/* 3. Machinery / Tools */}
         <NavLink
           to="/machinery"
           onClick={onClose}
@@ -218,10 +131,58 @@ export function Sidebar({
           }
         >
           <Tractor size={19} className="flex-shrink-0" />
-          <span>Machinery</span>
+          <span>Machinery / Tools</span>
         </NavLink>
 
-        {/* 6. Reports */}
+        {/* 4. Add Work (Service) */}
+        <NavLink
+          to="/jobs/new"
+          onClick={onClose}
+          className={({ isActive }) =>
+            `flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
+              isActive
+                ? "bg-[#2EA44F] text-white font-semibold shadow-sm"
+                : "text-white/85 hover:text-white hover:bg-white/10"
+            }`
+          }
+        >
+          <PlusSquare size={19} className="flex-shrink-0" />
+          <span>Add Work (Service)</span>
+        </NavLink>
+
+        {/* 5. Bills / Invoices */}
+        <NavLink
+          to="/invoices"
+          onClick={onClose}
+          className={({ isActive }) =>
+            `flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
+              isActive
+                ? "bg-[#2EA44F] text-white font-semibold shadow-sm"
+                : "text-white/85 hover:text-white hover:bg-white/10"
+            }`
+          }
+        >
+          <Receipt size={19} className="flex-shrink-0" />
+          <span>Bills / Invoices</span>
+        </NavLink>
+
+        {/* 6. Payments matching payments.jpeg */}
+        <NavLink
+          to="/payments"
+          onClick={onClose}
+          className={({ isActive }) =>
+            `flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
+              isActive
+                ? "bg-[#2EA44F] text-white font-semibold shadow-sm"
+                : "text-white/85 hover:text-white hover:bg-white/10"
+            }`
+          }
+        >
+          <span className="w-5 text-center font-bold text-base leading-none flex-shrink-0">₹</span>
+          <span>Payments</span>
+        </NavLink>
+
+        {/* 7. Reports */}
         <NavLink
           to="/reports"
           onClick={onClose}
@@ -237,7 +198,7 @@ export function Sidebar({
           <span>Reports</span>
         </NavLink>
 
-        {/* 7. Settings */}
+        {/* 8. Settings */}
         <NavLink
           to="/settings"
           onClick={onClose}

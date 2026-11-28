@@ -8,7 +8,32 @@ export const equipmentInputSchema = z
     kind: z.string().min(1),
     displayIcon: z.string().optional(),
     serialOrRegistration: z.string().optional(),
+    serialNumber: z.string().optional(),
     active: z.boolean(),
+    brand: z.string().optional(),
+    model: z.string().optional(),
+    purchaseDate: z.string().optional(),
+    purchaseCostPaise: moneyPaiseSchema.optional(),
+    status: z
+      .enum(["ACTIVE", "AVAILABLE", "MAINTENANCE", "INACTIVE"])
+      .optional(),
+    notes: z.string().optional(),
+    lastServiceDate: z.string().optional(),
+    nextMaintenanceDate: z.string().optional(),
+    horsepower: z.number().positive().optional(),
+    driveType: z.string().optional(),
+    implementSize: z.string().optional(),
+    capacity: z.string().optional(),
+    photoDataUrl: z.string().optional(),
+    availabilityRecords: z
+      .array(
+        z.object({
+          from: z.string(),
+          to: z.string(),
+          hours: z.number().nonnegative(),
+        }),
+      )
+      .optional(),
   })
   .strict();
 export const serviceInputSchema = z

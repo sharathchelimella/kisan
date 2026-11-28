@@ -6,6 +6,7 @@ import {
   equipmentSchema,
   serviceSchema,
   type CatalogQuery,
+  type calculateEquipmentAnalytics,
 } from "@kisan/contracts";
 import type { CatalogClient } from "../models/catalog";
 import { demoCatalog } from "../mocks/catalog";
@@ -28,6 +29,12 @@ function params(query: CatalogQuery) {
   );
 }
 const httpCatalog: CatalogClient = {
+  async analytics(from, to) {
+    const query = new URLSearchParams();
+    if (from) query.set("from", from);
+    if (to) query.set("to", to);
+    return await request("/equipment/analytics" + (query.size ? "?" + query : "")) as ReturnType<typeof calculateEquipmentAnalytics>;
+  },
   async equipment(query) {
     return equipmentPageSchema.parse(
       await request("/equipment" + params(query)),

@@ -18,7 +18,7 @@ export function formatInr(paise: number): string {
 export interface KpiCardProps {
   title: string;
   value: string;
-  growth: number;
+  growth?: number;
   comparisonText?: string;
   type: "workValue" | "collections" | "pending" | "utilization";
 }
@@ -30,7 +30,7 @@ export function KpiCard({
   comparisonText = "vs last month",
   type,
 }: KpiCardProps) {
-  const isPositive = growth >= 0;
+  const isPositive = (growth ?? 0) >= 0;
 
   const cardConfig = {
     workValue: {
@@ -83,7 +83,7 @@ export function KpiCard({
         </span>
 
         {/* Growth vs Previous Period */}
-        <div className="flex items-center gap-1 text-[11px] md:text-xs">
+        {growth !== undefined && <div className="flex items-center gap-1 text-[11px] md:text-xs">
           <span
             className={`font-bold flex items-center ${
               type === "pending"
@@ -102,21 +102,21 @@ export function KpiCard({
             )}
           </span>
           <span className="text-[#647067] font-medium">{comparisonText}</span>
-        </div>
+        </div>}
       </div>
     </div>
   );
 }
 
 export function DashboardKpiRow({
-  workValuePaise = 48200000,
-  collectionsPaise = 32600000,
-  pendingPaise = 15600000,
-  utilizationPct = 78,
-  workValueGrowth = 18,
-  collectionsGrowth = 22,
-  pendingGrowth = -4,
-  utilizationGrowth = 6,
+  workValuePaise = 0,
+  collectionsPaise = 0,
+  pendingPaise = 0,
+  utilizationPct,
+  workValueGrowth,
+  collectionsGrowth,
+  pendingGrowth,
+  utilizationGrowth,
 }: {
   workValuePaise?: number;
   collectionsPaise?: number;
@@ -156,7 +156,7 @@ export function DashboardKpiRow({
       {/* 4. Machinery Utilization */}
       <KpiCard
         title="Machinery Utilization"
-        value={`${utilizationPct}%`}
+        value={utilizationPct === undefined ? "Not enough data" : `${utilizationPct}%`}
         growth={utilizationGrowth}
         type="utilization"
       />

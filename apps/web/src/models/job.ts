@@ -1,4 +1,4 @@
-﻿import type {
+import type {
   Job,
   JobInput,
   JobFarmerSummary,
@@ -6,7 +6,13 @@
 } from "@kisan/contracts";
 
 export interface JobClient {
-  farmers(): Promise<JobFarmerSummary[]>;
+  farmers(): Promise<
+    (JobFarmerSummary & {
+      mobile?: string;
+      pendingAmountPaise?: number;
+      totalWorks?: number;
+    })[]
+  >;
   services(): Promise<JobServiceSummary[]>;
   save(input: JobInput): Promise<Job>;
 }

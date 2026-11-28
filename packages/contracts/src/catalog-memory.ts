@@ -36,6 +36,10 @@ export function createMemoryCatalog() {
     };
   }
   return {
+    async equipmentGet(businessId: string, id: string) {
+      const record = equipment.get(id);
+      return record?.businessId === businessId ? publicRecord(record) : null;
+    },
     async equipmentList(businessId: string, query: CatalogQuery) {
       return list(equipment, businessId, query);
     },

@@ -167,6 +167,7 @@ const VILLAGES = [
   "Rangampet",
   "Peddapalli",
   "Mallampet",
+  "Ramakrishnapuram",
   "Mancherial",
   "Hajipur",
   "Luxettipet",
@@ -191,13 +192,13 @@ function generateRemainingFarmers(): Farmer[] {
 
     const firstName = TELUGU_FIRST_NAMES[i % TELUGU_FIRST_NAMES.length];
     const lastName = TELUGU_LAST_NAMES[(i * 3 + 2) % TELUGU_LAST_NAMES.length];
-    const name = `${firstName} ${lastName}`;
-    const village = VILLAGES[(i * 2 + 1) % VILLAGES.length];
+    const name = i === 0 ? "Raju Yadav" : `${firstName} ${lastName}`;
+    const village = i === 0 ? "Ramakrishnapuram" : VILLAGES[(i * 2 + 1) % VILLAGES.length];
 
     // Phone number format: 98XXX XXXXX
     const p1 = 98000 + ((i * 137 + 42) % 1999);
     const p2 = 10000 + ((i * 389 + 17) % 89999);
-    const mobile = `${p1} ${p2}`;
+    const mobile = i === 0 ? "98765 43210" : `${p1} ${p2}`;
 
     // Work count
     const w = isLast

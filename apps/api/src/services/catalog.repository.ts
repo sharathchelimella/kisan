@@ -13,6 +13,7 @@ import { EquipmentModel } from "../models/Equipment.model";
 import { ServiceModel } from "../models/Service.model";
 
 export interface CatalogRepository {
+  equipmentGet(businessId: string, id: string): Promise<Equipment | null>;
   equipmentList(
     businessId: string,
     query: CatalogQuery,
@@ -52,6 +53,21 @@ function equipmentDto(record: {
   active: boolean;
   displayIcon?: string | null;
   serialOrRegistration?: string | null;
+  serialNumber?: string | null;
+  brand?: string | null;
+  model?: string | null;
+  purchaseDate?: string | null;
+  purchaseCostPaise?: number | null;
+  status?: Equipment["status"] | null;
+  notes?: string | null;
+  lastServiceDate?: string | null;
+  nextMaintenanceDate?: string | null;
+  horsepower?: number | null;
+  driveType?: string | null;
+  implementSize?: string | null;
+  capacity?: string | null;
+  photoDataUrl?: string | null;
+  availabilityRecords?: Equipment["availabilityRecords"] | null;
 }): Equipment {
   return {
     id: record._id.toHexString(),
@@ -60,6 +76,21 @@ function equipmentDto(record: {
     active: record.active,
     displayIcon: record.displayIcon ?? undefined,
     serialOrRegistration: record.serialOrRegistration ?? undefined,
+    serialNumber: record.serialNumber ?? undefined,
+    brand: record.brand ?? undefined,
+    model: record.model ?? undefined,
+    purchaseDate: record.purchaseDate ?? undefined,
+    purchaseCostPaise: record.purchaseCostPaise ?? undefined,
+    status: record.status ?? undefined,
+    notes: record.notes ?? undefined,
+    lastServiceDate: record.lastServiceDate ?? undefined,
+    nextMaintenanceDate: record.nextMaintenanceDate ?? undefined,
+    horsepower: record.horsepower ?? undefined,
+    driveType: record.driveType ?? undefined,
+    implementSize: record.implementSize ?? undefined,
+    capacity: record.capacity ?? undefined,
+    photoDataUrl: record.photoDataUrl ?? undefined,
+    availabilityRecords: record.availabilityRecords ?? undefined,
   };
 }
 function serviceDto(record: {
@@ -80,6 +111,11 @@ function serviceDto(record: {
   };
 }
 export const mongoCatalog: CatalogRepository = {
+  async equipmentGet(businessId, id) {
+    if (!isValidObjectId(id)) return null;
+    const record = await EquipmentModel.findOne({ businessId, _id: id }).lean();
+    return record ? equipmentDto(record) : null;
+  },
   async equipmentList(businessId, query) {
     const match = filter(businessId, query);
     const [items, total] = await Promise.all([

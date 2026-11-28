@@ -1,7 +1,8 @@
-﻿import type { Job, JobInput } from "@kisan/contracts";
+import type { Job, JobInput } from "@kisan/contracts";
 import { multiplyRate, sumPaise } from "@kisan/domain";
 import type { JobClient } from "../models/job";
 import { demoFarmers } from "./fixtures";
+import { all124DemoFarmers } from "./farmer-dataset";
 import { demoCatalog } from "./catalog";
 
 const fixtureTime = "2026-11-20T08:00:00.000Z";
@@ -12,6 +13,7 @@ const fixtureLine = {
   equipmentIds: ["DEMO-tractor", "DEMO-rotavator"],
   unit: "ACRE" as const,
   quantity: "3.5",
+  operatingHours: "3",
   pricingMode: "DEFAULT_RATE" as const,
   defaultRateSnapshotPaise: 170000,
   totalPaise: 595000,
@@ -53,6 +55,7 @@ export const demoJobs: Job[] = [
         ...fixtureLine,
         lineId: "DEMO-line-3",
         quantity: "2",
+        operatingHours: "2",
         totalPaise: 340000,
       },
       {
@@ -62,6 +65,7 @@ export const demoJobs: Job[] = [
         equipmentIds: ["DEMO-tractor", "DEMO-trolley"],
         unit: "TRIP",
         quantity: "2",
+        operatingHours: "1",
         pricingMode: "DEFAULT_RATE",
         defaultRateSnapshotPaise: 50000,
         totalPaise: 100000,
@@ -76,7 +80,16 @@ export const demoJobs: Job[] = [
 ];
 export const demoJobClient: JobClient = {
   async farmers() {
-    return demoFarmers.map(({ id, name, village }) => ({ id, name, village }));
+    return all124DemoFarmers.map(
+      ({ id, name, village, mobile, pendingAmountPaise, totalWorks }) => ({
+        id,
+        name,
+        village,
+        mobile,
+        pendingAmountPaise,
+        totalWorks,
+      }),
+    );
   },
   async services() {
     const page = await demoCatalog.services({

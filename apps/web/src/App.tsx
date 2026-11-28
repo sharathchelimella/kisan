@@ -8,6 +8,7 @@ import { SettingsPage } from "./views/pages/SettingsPage";
 import { AddWorkPage } from "./views/pages/AddWorkPage";
 import { MachineryPage } from "./views/pages/MachineryPage";
 import { PaymentDetailPage } from "./views/pages/PaymentDetailPage";
+import { OutstandingBalancesPage } from "./views/pages/OutstandingBalancesPage";
 import { MachineryDetailPage } from "./views/pages/MachineryDetailPage";
 import { ActivityHistoryPage } from "./views/pages/ActivityHistoryPage";
 import {
@@ -94,6 +95,7 @@ function AppRoutes() {
         <Route path="/jobs/:id" element={<WorkRecordPage />} />
         <Route path="/work-records/:id" element={<WorkRecordPage />} />
         <Route path="/invoices/:id" element={<InvoicePage />} />
+        <Route path="/payments/outstanding-balances" element={<OutstandingBalancesPage />} />
         <Route path="/payments/:id" element={<PaymentDetailPage />} />
         <Route path="/machinery/:id" element={<MachineryDetailPage />} />
         <Route path="/activities" element={<ActivityHistoryPage />} />

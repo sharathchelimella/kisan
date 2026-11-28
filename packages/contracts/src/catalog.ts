@@ -13,6 +13,34 @@ export const equipmentWriteSchema = equipmentInputSchema
     kind: z.string().trim().min(1).max(80),
     displayIcon: z.string().max(80).optional(),
     serialOrRegistration: z.string().trim().max(80).optional(),
+    serialNumber: z.string().trim().max(80).optional(),
+    brand: z.string().trim().max(80).optional(),
+    model: z.string().trim().max(80).optional(),
+    purchaseDate: z.iso.date().optional(),
+    purchaseCostPaise: z.number().int().nonnegative().optional(),
+    notes: z.string().trim().max(2000).optional(),
+    lastServiceDate: z.iso.date().optional(),
+    nextMaintenanceDate: z.iso.date().optional(),
+    driveType: z.string().trim().max(80).optional(),
+    implementSize: z.string().trim().max(80).optional(),
+    capacity: z.string().trim().max(80).optional(),
+    photoDataUrl: z
+      .string()
+      .regex(/^data:image\/(jpeg|webp);base64,[A-Za-z0-9+/]+={0,2}$/)
+      .max(700000)
+      .optional(),
+    availabilityRecords: z
+      .array(
+        z
+          .object({
+            from: z.iso.date(),
+            to: z.iso.date(),
+            hours: z.number().nonnegative(),
+          })
+          .refine((value) => value.from <= value.to),
+      )
+      .max(120)
+      .optional(),
   })
   .strict();
 export const serviceWriteSchema = serviceInputSchema

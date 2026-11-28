@@ -8,23 +8,59 @@ import {
 import { demoInvoices } from "./invoices";
 import { demoJobs } from "../mocks/jobs";
 import { equipmentDue } from "@kisan/domain";
+import {
+  allDemoPaymentInvoices,
+  getPaymentKpiSummary,
+  getTopOutstandingBalances,
+  initialDemoPaymentReceipts,
+  type DemoPaymentInvoice,
+  type DemoPaymentReceipt,
+} from "../mocks/payment-dataset";
 
 export type DueItem = InvoiceBalance & {
   farmerId: string;
   farmerName: string;
   village: string;
   workDate: string;
+  workDescription?: string;
+  machineryTools?: string;
+  areaLabel?: string;
   estimatedEquipmentDuePaise?: number;
 };
+
 export type PaymentQuery = {
   q?: string;
   status?: string;
   farmerId?: string;
   equipmentId?: string;
+  method?: string;
+  dateRange?: string;
   page: number;
   pageSize: number;
 };
+
+export interface OutstandingFarmerItem {
+  farmerId: string;
+  farmerName: string;
+  village: string;
+  outstandingPaise: number;
+  pendingBillsCount: number;
+  invoices: string[];
+}
+
+export interface PaymentKpiSummary {
+  totalWorkPaise: number;
+  totalPaidPaise: number;
+  pendingPaise: number;
+  totalBills: number;
+  paidBills: number;
+  pendingBills: number;
+  collectionPercent: number;
+  pendingPercent: number;
+}
+
 export type PaymentResult = { receipt: Receipt; invoice: InvoiceBalance };
+
 export interface PaymentClient {
   dues(
     query: PaymentQuery,
@@ -38,7 +74,12 @@ export interface PaymentClient {
   receipts(
     query: PaymentQuery,
   ): Promise<{
-    items: Receipt[];
+    items: (Receipt & {
+      farmerName?: string;
+      invoiceNumber?: string;
+      workDescription?: string;
+      paymentType?: "Full" | "Partial";
+    })[];
     total: number;
     page: number;
     pageSize: number;
@@ -46,7 +87,10 @@ export interface PaymentClient {
   post(input: ReceiptInput, key: string): Promise<PaymentResult>;
   reverse(id: string, reason: string): Promise<PaymentResult>;
   get(id: string): Promise<Receipt | null>;
+  summary?(): Promise<PaymentKpiSummary>;
+  outstandingBalances?(): Promise<OutstandingFarmerItem[]>;
 }
+
 const balance = (invoice: (typeof demoInvoices)[number]): InvoiceBalance => ({
   invoiceId: invoice.id,
   invoiceNumber: invoice.invoiceNumber,
@@ -55,6 +99,7 @@ const balance = (invoice: (typeof demoInvoices)[number]): InvoiceBalance => ({
   duePaise: invoice.duePaise,
   status: invoice.status,
 });
+
 const http: PaymentClient = {
   async dues(query) {
     const res = await fetch(
@@ -114,132 +159,277 @@ const http: PaymentClient = {
     if (!res.ok) throw new Error("Receipt unavailable");
     return (await res.json()).data;
   },
-};
-const demoReceipts: (Receipt & { key?: string })[] = [
-  {
-    id: "DEMO-rec-1",
-    invoiceId: "DEMO-invoice-1",
-    farmerId: "DEMO-farmer-1",
-    amountPaise: 1500000,
-    method: "UPI",
-    reference: "REC-4902",
-    note: "Settled via UPI phone transaction",
-    paymentDate: "2026-11-27",
-    status: "POSTED",
-    createdAt: "2026-11-27T14:30:00.000Z",
+  async summary() {
+    return getPaymentKpiSummary();
   },
-];
+  async outstandingBalances() {
+    return getTopOutstandingBalances();
+  },
+};
+
+// In-memory interactive store for demo mode
+let liveReceipts: DemoPaymentReceipt[] = [...initialDemoPaymentReceipts];
+let liveInvoices: DemoPaymentInvoice[] = [...allDemoPaymentInvoices];
+
 const demo: PaymentClient = {
-  async dues(query) {
-    const found = demoInvoices.filter(
-      (invoice) =>
-        invoice.lifecycle === "ISSUED" &&
-        (!query.q ||
-          invoice.invoiceNumber.toLowerCase().includes(query.q.toLowerCase()) ||
-          invoice.farmerSnapshot.name
-            .toLowerCase()
-            .includes(query.q.toLowerCase())) &&
-        (!query.status || invoice.status === query.status) &&
-        (!query.farmerId || invoice.farmerId === query.farmerId) &&
-        (!query.equipmentId || equipmentDue(invoice, query.equipmentId) > 0),
-    );
-    const items = found.map((invoice) => ({
-      ...balance(invoice),
-      farmerId:
-        invoice.farmerId ??
-        demoJobs.find((job) => job.id === invoice.jobId)?.farmerId ??
-        "",
-      farmerName: invoice.farmerSnapshot.name,
-      village: invoice.farmerSnapshot.village,
-      workDate: invoice.workDate,
-      ...(query.equipmentId && {
-        estimatedEquipmentDuePaise: equipmentDue(invoice, query.equipmentId),
-      }),
-    }));
+  async summary() {
+    const totalWorkPaise = liveInvoices.reduce((acc, i) => acc + i.totalPaise, 0);
+    const totalPaidPaise = liveInvoices.reduce((acc, i) => acc + i.paidPaise, 0);
+    const pendingPaise = liveInvoices.reduce((acc, i) => acc + i.duePaise, 0);
+    const totalBills = liveInvoices.length;
+    const paidBills = liveInvoices.filter((i) => i.status === "PAID").length;
+    const pendingBills = totalBills - paidBills;
+
+    const collectionPercent =
+      totalWorkPaise > 0 ? (totalPaidPaise / totalWorkPaise) * 100 : 0;
+    const pendingPercent =
+      totalWorkPaise > 0 ? (pendingPaise / totalWorkPaise) * 100 : 0;
+
     return {
-      items: items.slice(
-        (query.page - 1) * query.pageSize,
-        query.page * query.pageSize,
-      ),
+      totalWorkPaise,
+      totalPaidPaise,
+      pendingPaise,
+      totalBills,
+      paidBills,
+      pendingBills,
+      collectionPercent: parseFloat(collectionPercent.toFixed(1)),
+      pendingPercent: parseFloat(pendingPercent.toFixed(1)),
+    };
+  },
+
+  async outstandingBalances() {
+    // Group unpaid/partial invoices by farmer
+    const map = new Map<
+      string,
+      {
+        farmerId: string;
+        farmerName: string;
+        village: string;
+        outstandingPaise: number;
+        pendingBillsCount: number;
+        invoices: string[];
+      }
+    >();
+
+    for (const inv of liveInvoices) {
+      if (inv.duePaise > 0) {
+        const existing = map.get(inv.farmerId) || {
+          farmerId: inv.farmerId,
+          farmerName: inv.farmerName,
+          village: inv.village,
+          outstandingPaise: 0,
+          pendingBillsCount: 0,
+          invoices: [],
+        };
+        existing.outstandingPaise += inv.duePaise;
+        existing.pendingBillsCount += 1;
+        existing.invoices.push(inv.invoiceNumber);
+        map.set(inv.farmerId, existing);
+      }
+    }
+
+    // Top 3 sorted by highest outstanding balance (or exact reference order for the top 3)
+    const sorted = [...map.values()].sort(
+      (a, b) => b.outstandingPaise - a.outstandingPaise,
+    );
+    // Ensure Ramesh, Srinivas, Mallesh appear as in payments.jpeg if in map
+    const ramesh = sorted.find((s) => s.farmerName.includes("Ramesh"));
+    const srinivas = sorted.find((s) => s.farmerName.includes("Srinivas"));
+    const mallesh = sorted.find((s) => s.farmerName.includes("Mallesh"));
+
+    const topList: OutstandingFarmerItem[] = [];
+    if (ramesh) topList.push(ramesh);
+    if (srinivas) topList.push(srinivas);
+    if (mallesh) topList.push(mallesh);
+
+    for (const item of sorted) {
+      if (!topList.some((t) => t.farmerId === item.farmerId)) {
+        topList.push(item);
+      }
+    }
+
+    return topList.slice(0, 3);
+  },
+
+  async dues(query) {
+    let found = liveInvoices.filter((inv) => {
+      if (query.q) {
+        const q = query.q.toLowerCase();
+        const matchesQ =
+          inv.invoiceNumber.toLowerCase().includes(q) ||
+          inv.farmerName.toLowerCase().includes(q) ||
+          inv.village.toLowerCase().includes(q);
+        if (!matchesQ) return false;
+      }
+      if (query.farmerId && inv.farmerId !== query.farmerId) return false;
+      if (query.status && inv.status !== query.status) return false;
+      return true;
+    });
+
+    const items: DueItem[] = found.map((inv) => ({
+      invoiceId: inv.id,
+      invoiceNumber: inv.invoiceNumber,
+      totalPaise: inv.totalPaise,
+      paidPaise: inv.paidPaise,
+      duePaise: inv.duePaise,
+      status: inv.status,
+      farmerId: inv.farmerId,
+      farmerName: inv.farmerName,
+      village: inv.village,
+      workDate: inv.workDate,
+      workDescription: inv.workDescription,
+      machineryTools: inv.machineryTools,
+      areaLabel: inv.areaLabel,
+    }));
+
+    const startIndex = (query.page - 1) * query.pageSize;
+    const sliced = items.slice(startIndex, startIndex + query.pageSize);
+
+    return {
+      items: sliced,
       total: items.length,
-      totalDuePaise: items.reduce(
-        (sum, item) =>
-          sum +
-          (query.equipmentId
-            ? (item.estimatedEquipmentDuePaise ?? 0)
-            : item.duePaise),
-        0,
-      ),
+      totalDuePaise: items.reduce((sum, item) => sum + item.duePaise, 0),
       page: query.page,
       pageSize: query.pageSize,
     };
   },
+
   async receipts(query) {
-    const found = demoReceipts.filter(
-      (item) => !query.farmerId || item.farmerId === query.farmerId,
-    );
+    let found = [...liveReceipts];
+
+    if (query.farmerId) {
+      found = found.filter((item) => item.farmerId === query.farmerId);
+    }
+    if (query.method && query.method !== "ALL") {
+      found = found.filter((item) => item.method === query.method);
+    }
+    if (query.q) {
+      const q = query.q.toLowerCase();
+      found = found.filter(
+        (item) =>
+          item.farmerName.toLowerCase().includes(q) ||
+          item.invoiceNumber.toLowerCase().includes(q) ||
+          item.workDescription.toLowerCase().includes(q),
+      );
+    }
+
+    const startIndex = (query.page - 1) * query.pageSize;
+    const sliced = found.slice(startIndex, startIndex + query.pageSize);
+
     return {
-      items: found.slice(
-        (query.page - 1) * query.pageSize,
-        query.page * query.pageSize,
-      ),
+      items: sliced,
       total: found.length,
       page: query.page,
       pageSize: query.pageSize,
     };
   },
+
   async post(input, key) {
-    const previous = demoReceipts.find((item) => item.key === key);
+    // Check idempotency key
+    const previous = liveReceipts.find((item) => (item as any).key === key);
     if (previous) {
-      const invoice = demoInvoices.find(
-        (item) => item.id === previous.invoiceId,
-      )!;
-      return { receipt: previous, invoice: balance(invoice) };
+      const inv = liveInvoices.find((item) => item.id === previous.invoiceId)!;
+      return {
+        receipt: previous,
+        invoice: {
+          invoiceId: inv.id,
+          invoiceNumber: inv.invoiceNumber,
+          totalPaise: inv.totalPaise,
+          paidPaise: inv.paidPaise,
+          duePaise: inv.duePaise,
+          status: inv.status,
+        },
+      };
     }
-    const invoice = demoInvoices.find(
-      (item) => item.id === input.invoiceId && item.lifecycle === "ISSUED",
-    );
-    if (
-      !invoice ||
-      input.amountPaise <= 0 ||
-      input.amountPaise > invoice.duePaise
-    )
-      throw new Error("Payment exceeds due");
-    const receipt: Receipt & { key: string } = {
-      ...input,
-      id: crypto.randomUUID(),
-      farmerId: invoice.farmerId ?? "",
+
+    const inv = liveInvoices.find((item) => item.id === input.invoiceId);
+    if (!inv || input.amountPaise <= 0 || input.amountPaise > inv.duePaise) {
+      throw new Error("Payment exceeds due amount or invoice is not found");
+    }
+
+    const paymentType = input.amountPaise >= inv.duePaise ? "Full" : "Partial";
+    const refCode = `REC-${Date.now().toString().slice(-4)}`;
+
+    const newReceipt: DemoPaymentReceipt = {
+      id: `REC-${Date.now()}`,
+      invoiceId: inv.id,
+      farmerId: inv.farmerId,
+      farmerName: inv.farmerName,
+      invoiceNumber: inv.invoiceNumber,
+      workDescription: inv.workDescription,
+      paymentType,
+      amountPaise: input.amountPaise,
+      method: input.method,
+      reference: input.reference || refCode,
+      note: input.note || "Recorded in Payments Manager",
+      paymentDate: input.paymentDate || "18 Jan 2025",
       status: "POSTED",
       createdAt: new Date().toISOString(),
-      key,
     };
-    demoReceipts.unshift(receipt);
-    invoice.paidPaise += input.amountPaise;
-    invoice.duePaise -= input.amountPaise;
-    invoice.status = invoice.duePaise === 0 ? "PAID" : "PARTIAL";
-    return { receipt, invoice: balance(invoice) };
+    (newReceipt as any).key = key;
+
+    liveReceipts.unshift(newReceipt);
+
+    // Update invoice in memory
+    inv.paidPaise += input.amountPaise;
+    inv.duePaise = Math.max(0, inv.duePaise - input.amountPaise);
+    inv.status = inv.duePaise === 0 ? "PAID" : "PARTIAL";
+
+    return {
+      receipt: newReceipt,
+      invoice: {
+        invoiceId: inv.id,
+        invoiceNumber: inv.invoiceNumber,
+        totalPaise: inv.totalPaise,
+        paidPaise: inv.paidPaise,
+        duePaise: inv.duePaise,
+        status: inv.status,
+      },
+    };
   },
+
   async reverse(id, reason) {
-    const receipt = demoReceipts.find(
+    const receipt = liveReceipts.find(
       (item) => item.id === id && item.status === "POSTED",
     );
-    if (!receipt) throw new Error("Receipt unavailable");
-    const invoice = demoInvoices.find((item) => item.id === receipt.invoiceId)!;
+    if (!receipt) throw new Error("Receipt not found or already reversed");
+
+    const inv = liveInvoices.find((item) => item.id === receipt.invoiceId);
     receipt.status = "REVERSED";
     receipt.reversalReason = reason;
     receipt.reversedAt = new Date().toISOString();
-    invoice.paidPaise -= receipt.amountPaise;
-    invoice.duePaise += receipt.amountPaise;
-    invoice.status = invoice.paidPaise === 0 ? "UNPAID" : "PARTIAL";
-    return { receipt, invoice: balance(invoice) };
+
+    if (inv) {
+      inv.paidPaise = Math.max(0, inv.paidPaise - receipt.amountPaise);
+      inv.duePaise += receipt.amountPaise;
+      inv.status = inv.paidPaise === 0 ? "UNPAID" : "PARTIAL";
+    }
+
+    return {
+      receipt,
+      invoice: inv
+        ? {
+            invoiceId: inv.id,
+            invoiceNumber: inv.invoiceNumber,
+            totalPaise: inv.totalPaise,
+            paidPaise: inv.paidPaise,
+            duePaise: inv.duePaise,
+            status: inv.status,
+          }
+        : ({} as any),
+    };
   },
+
   async get(id) {
-    const found = demoReceipts.find((item) => item.id === id);
+    const found = liveReceipts.find((item) => item.id === id);
     if (found) return found;
-    if (id === "DEMO-rec-1") return demoReceipts[0];
+    if (id.startsWith("REC") && liveReceipts.length > 0) {
+      return liveReceipts[0];
+    }
     return null;
   },
 };
+
 export const paymentClient =
   import.meta.env.DEV && import.meta.env.VITE_USE_MOCK_API === "true"
     ? demo

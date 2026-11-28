@@ -15,3 +15,4 @@ export * from "./auth.inputs";
 export * from "./farmer-directory";
 export * from "./catalog";
 export * from "./job-record.contract";
+export * from "./equipment-analytics";

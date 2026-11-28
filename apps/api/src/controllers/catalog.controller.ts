@@ -14,6 +14,7 @@ export function createCatalogController(
   repository: CatalogRepository,
 ): Record<
   | "equipmentList"
+  | "equipmentGet"
   | "serviceList"
   | "equipmentCreate"
   | "serviceCreate"
@@ -23,6 +24,8 @@ export function createCatalogController(
 > {
   const service = createCatalogService(repository);
   return {
+    equipmentGet: async (req, res) =>
+      send(res, await service.equipmentGet(res.locals.businessId, String(req.params.id))),
     equipmentList: async (req, res) =>
       send(res, await service.equipmentList(res.locals.businessId, req.query)),
     serviceList: async (req, res) =>

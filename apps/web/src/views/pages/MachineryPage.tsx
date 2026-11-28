@@ -18,6 +18,7 @@ import { parseRupees } from "@kisan/domain";
 import { useCatalog, useEquipmentOptions } from "../../controllers/useCatalog";
 import { catalogClient } from "../../services/catalog";
 import { Button, Card, Field, Loading } from "../components/ui";
+import { MachineryEquipment } from "./MachineryEquipment";
 
 const kinds = [
   "TRACTOR",
@@ -219,7 +220,7 @@ function ServiceEditor({ item, close }: { item?: Service; close: () => void }) {
   );
 }
 
-export function MachineryPage() {
+function ServicesPage() {
   const { t, i18n } = useTranslation();
   const [params, setParams] = useSearchParams();
   const tab = params.get("tab") === "services" ? "services" : "equipment";
@@ -451,4 +452,8 @@ export function MachineryPage() {
       )}
     </section>
   );
+}
+export function MachineryPage() {
+  const [params] = useSearchParams();
+  return params.get("tab") === "services" ? <ServicesPage /> : <MachineryEquipment />;
 }

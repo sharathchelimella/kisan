@@ -58,6 +58,9 @@ export function createJobService(ports: JobPorts) {
         equipmentIds: [...service.equipmentIds],
         unit: service.unit,
         quantity: requested.quantity,
+        ...(requested.operatingHours && {
+          operatingHours: requested.operatingHours,
+        }),
         pricingMode: requested.pricingMode,
         defaultRateSnapshotPaise: service.defaultRatePaise,
         ...(requested.pricingMode === "CUSTOM_RATE" && {
@@ -108,6 +111,16 @@ export const mongoJobPorts: JobPorts = {
       businessId,
       active: true,
     }).lean();
+    if (record) {
+      const { EquipmentModel } = await import("../models/Equipment.model");
+      const available = await EquipmentModel.countDocuments({
+        businessId,
+        _id: { $in: record.equipmentIds },
+        active: true,
+        status: { $nin: ["INACTIVE", "MAINTENANCE"] },
+      });
+      if (available !== record.equipmentIds.length) return null;
+    }
     return (
       record && {
         id: record._id.toString(),
@@ -132,4 +145,3 @@ export const mongoJobPorts: JobPorts = {
     });
   },
 };
-

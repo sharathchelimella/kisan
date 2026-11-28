@@ -14,6 +14,7 @@ export function createCatalogService(repository: CatalogRepository) {
       throw new CatalogReferenceError();
   }
   return {
+    equipmentGet: (businessId: string, id: string) => repository.equipmentGet(businessId, id),
     equipmentList: (businessId: string, query: unknown) =>
       repository.equipmentList(businessId, catalogQuerySchema.parse(query)),
     serviceList: (businessId: string, query: unknown) =>

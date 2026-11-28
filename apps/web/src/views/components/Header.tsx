@@ -152,7 +152,7 @@ export function Header({ onOpenMobileMenu }: { onOpenMobileMenu?: () => void }) 
           )}
         </div>
 
-        {/* Notification Bell with Red Badge Dot */}
+        {/* Notification bell */}
         <div className="relative" ref={notifRef}>
           <button
             type="button"
@@ -161,31 +161,14 @@ export function Header({ onOpenMobileMenu }: { onOpenMobileMenu?: () => void }) 
             aria-label="View notifications"
           >
             <Bell size={18} />
-            {/* Red unread indicator dot matching Reference Image */}
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-red-500 border border-white" />
           </button>
 
           {notifMenuOpen && (
             <div className="absolute right-0 mt-1.5 w-72 bg-white rounded-2xl shadow-xl border border-[#E3E8E4] p-3 z-50 animate-scale-in text-xs">
               <div className="flex items-center justify-between pb-2 border-b border-[#F1F5F3]">
                 <span className="font-bold text-[#17251C]">Notifications</span>
-                <span className="text-[10px] bg-red-100 text-red-700 font-bold px-1.5 py-0.5 rounded-full">
-                  1 New
-                </span>
               </div>
-              <div className="py-2.5 space-y-2">
-                <div className="p-2 rounded-lg bg-emerald-50/50 border border-emerald-100">
-                  <span className="font-semibold text-[#17251C] block">
-                    Payment Received
-                  </span>
-                  <span className="text-[#647067] text-[11px] block mt-0.5">
-                    ₹10,000 received from Suresh via UPI
-                  </span>
-                  <span className="text-[10px] text-emerald-700 block mt-1">
-                    Today, 09:18 AM
-                  </span>
-                </div>
-              </div>
+              <p className="py-3 text-[#647067]">No notifications.</p>
             </div>
           )}
         </div>

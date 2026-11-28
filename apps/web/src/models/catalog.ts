@@ -6,6 +6,7 @@ import type {
   ServiceInput,
   PageResult,
 } from "@kisan/contracts";
+import type { calculateEquipmentAnalytics } from "@kisan/contracts";
 
 export interface CatalogClient {
   equipment(query: CatalogQuery): Promise<PageResult<Equipment>>;
@@ -13,4 +14,5 @@ export interface CatalogClient {
   saveEquipment(input: EquipmentInput, id?: string): Promise<Equipment>;
   saveService(input: ServiceInput, id?: string): Promise<Service>;
   getEquipment(id: string): Promise<Equipment | null>;
+  analytics(from?: string, to?: string): Promise<ReturnType<typeof calculateEquipmentAnalytics>>;
 }

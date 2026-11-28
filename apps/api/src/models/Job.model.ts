@@ -8,6 +8,7 @@ const lineSchema = new Schema(
     equipmentIds: [{ type: Schema.Types.ObjectId, required: true }],
     unit: { type: String, required: true },
     quantity: { type: String, required: true },
+    operatingHours: String,
     pricingMode: { type: String, required: true },
     defaultRateSnapshotPaise: { type: Number, required: true },
     agreedRatePaise: Number,

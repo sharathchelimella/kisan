@@ -27,6 +27,7 @@ const lineFields = z.object({
   equipmentIds: z.array(idSchema),
   unit: pricingUnitSchema,
   quantity: quantitySchema,
+  operatingHours: z.string().regex(/^\d+(\.\d+)?$/).optional(),
   reason: z.string().optional(),
 });
 export const workLineSchema = z
@@ -61,6 +62,7 @@ export const jobFarmerSummarySchema = z.object({
   id: idSchema,
   name: z.string(),
   village: z.string(),
+  mobile: z.string().optional(),
 });
 export const jobServiceSummarySchema = z.object({
   id: idSchema,

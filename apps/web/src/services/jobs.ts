@@ -1,4 +1,4 @@
-﻿import {
+import {
   API_PREFIX,
   AUTH_REQUEST_HEADER,
   jobSchema,
@@ -16,7 +16,16 @@ const httpJobs: JobClient = {
       pageSize: 100,
       archived: "false",
     });
-    return result.items.map(({ id, name, village }) => ({ id, name, village }));
+    return result.items.map(
+      ({ id, name, village, mobile, pendingAmountPaise, totalWorks }) => ({
+        id,
+        name,
+        village,
+        mobile,
+        pendingAmountPaise,
+        totalWorks,
+      }),
+    );
   },
   async services() {
     const result = await catalogClient.services({
